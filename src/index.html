@@ -1,13 +1,434 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>MyApp</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>⠀</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <style>
+      table {
+        border-collapse: collapse;
+        table-layout: auto;
+      }
+      td {
+        text-align: center;
+        vertical-align: middle;
+      }
+      select {
+        height: 30px;
+        margin-bottom: 4px;
+      }
+      input.pelaaja {
+        padding: 14px;
+        margin: 3px;
+        width: 180px;
+      }
+      @media only screen and (max-width: 600px) {
+        input.pelaaja {
+          width: 100px;
+        }
+      }
+      .pallo,
+      .tyhja {
+        height: 20px;
+        width: 20px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-bottom: -3px;
+      }
+      .pallo {
+        background-color: #3b5998;
+      }
+      .tyhja {
+        background-color: #cccccc;
+      }
+      .erat {
+        background-color: #cccccc;
+        font-weight: bold;
+        font-size: 120%;
+        padding: 5px 10px;
+      }
+      .era1,
+      .era2,
+      .era3,
+      .era4,
+      .era5 {
+        background-color: #3b5998;
+        font-weight: bold;
+        font-size: 120%;
+        color: #ffffff;
+        padding: 5px 10px 5px 0px;
+      }
+      .era1 {
+        padding: 5px 10px;
+      }
+      table.tennis {
+        border-collapse: collapse;
+      }
+
+      table.tennis td.score {
+        font-size: 120%;
+        padding: 10px 10px;
+        min-width: 40px;
+      }
+      table.tennis td.vuoro {
+        padding: 30px 10px;
+        min-width: 40px;
+      }
+      button.reduce {
+        background-color: #cccccc;
+        color: #000000;
+        padding: 3px;
+      }
+      button.lisaa {
+        padding: 3px 15px;
+      }
+      p {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+      input.pelaaja {
+        text-align: center;
+        padding: 14px;
+        margin: 3px;
+        font-weight: bold;
+        font-size: 120%;
+      }
+      td {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      var ottelu = {
+        voittotapa: 3,
+        tiebreak: "jokaisessa",
+        tiebreakissa: false,
+        erassa: 1,
+        vuoro: 1,
+        eratulos: [],
+        kumpi: "oikea",
+        vaihda: function () {
+          ottelu.kumpi = "oikea";
+          if (pelaaja[1].score == "AD" || pelaaja[2].score == "AD") {
+            ottelu.kumpi = "vasen";
+            //alert("ad ja vasen!");
+          } else if (pelaaja[1].score == "DEUCE") {
+            ottelu.kumpi = "oikea";
+          } else {
+            var yhteis = pelaaja[1].score + pelaaja[2].score;
+            if (ottelu.tiebreakissa) {
+              if (yhteis % 2 == 1) ottelu.kumpi = "vasen";
+            } else if (
+              yhteis == 15 ||
+              yhteis == 40 ||
+              yhteis == 45 ||
+              yhteis == 70
+            )
+              ottelu.kumpi = "vasen";
+          }
+          var adderi = pelaaja[1].pelit + pelaaja[2].pelit;
+          if (ottelu.erassa > 1) {
+            for (var i = 0; i < ottelu.eratulos.length; i++) {
+              adderi += ottelu.eratulos[i];
+            }
+            console.log("ADDERI:" + adderi);
+          }
+          if (ottelu.tiebreakissa) {
+            adderi += Math.round((pelaaja[1].score + pelaaja[2].score) / 2);
+          }
+          ottelu.vuoro = 1 + (adderi % 2);
+          //alert(ottelu.kumpi);
+          $("td.vuoro").html("<span class='tyhja'></span>");
+          $("td#" + ottelu.kumpi + ottelu.vuoro).html(
+            "<span class='pallo'></span>"
+          );
+          //alert(ottelu.kumpi);
+        },
+        vaihdaVoittoTapa: function (val) {
+          if (val == 1 || val == 2 || val == 3) {
+            if (
+              ottelu.erassa < val ||
+              (ottelu.erassa == val &&
+                (pelaaja[1].pelit < 5 || pelaaja[2].pelit < 5))
+            )
+              ottelu.voittotapa = val;
+            else {
+              alert(
+                "The match has already been played for so long that this value can not be changed to your liking!"
+              );
+              $("#voittotapa").val(ottelu.voittotapa);
+            }
+          }
+          return;
+        },
+        vaihdaTieBreak: function (val) {
+          if (val == "jokaisessa" || val == "eiviimeisessa" || val == "ei") {
+            if (
+              ottelu.erassa == 1 &&
+              (pelaaja[1].pelit < 5 || pelaaja[2].pelit < 5)
+            )
+              ottelu.tiebreak = val;
+            else {
+              alert(
+                "The match has already been played for so long that this value can not be changed to your liking!"
+              );
+              $("#tiebreak").val(ottelu.tiebreak);
+            }
+          }
+          return;
+        },
+        nollaus: function () {
+          ottelu.erassa = 1;
+          pelaaja[1].score = 0;
+          pelaaja[1].pelit = 0;
+          pelaaja[1].erat = 0;
+          pelaaja[1].alku = true;
+          pelaaja[1].loppu = false;
+          pelaaja[2].score = 0;
+          pelaaja[2].pelit = 0;
+          pelaaja[2].erat = 0;
+          pelaaja[2].alku = true;
+          pelaaja[2].loppu = false;
+          $("td#erat1").html(0);
+          $("td#erat2").html(0);
+          $("td#era11").html(0);
+          $("td#era21").html(0);
+          $("td#score1").html(0);
+          $("td#score2").html(0);
+          $("td.era2").hide();
+          $("td.era3").hide();
+          $("td.era4").hide();
+          $("td.era5").hide();
+          ottelu.vaihda();
+        },
+      };
+      var pelaaja = new Object();
+      pelaaja[1] = { score: 0, pelit: 0, erat: 0, alku: true, loppu: false };
+      pelaaja[2] = { score: 0, pelit: 0, erat: 0, alku: true, loppu: false };
+
+      function lisaa(p, q, lisays) {
+        if (
+          !lisays &&
+          pelaaja[p].score === 0 &&
+          pelaaja[p].pelit === 0 &&
+          pelaaja[p].erat === 0
+        )
+          return;
+        if (
+          lisays &&
+          (pelaaja[p].erat >= ottelu.voittotapa ||
+            pelaaja[q].erat >= ottelu.voittotapa)
+        )
+          return;
+        if (!lisays && pelaaja[q].erat >= ottelu.voittotapa) return;
+        if (
+          ottelu.tiebreakissa &&
+          pelaaja[p].score >= 6 &&
+          pelaaja[q].score <= pelaaja[p].score - 1 &&
+          lisays
+        ) {
+          pelivoitto(p, q, 1);
+          return;
+        } else if (ottelu.tiebreakissa && lisays) {
+          pelaaja[p].score += 1;
+        } else if (pelaaja[p].score === 0) {
+          if (lisays) pelaaja[p].score = 15;
+          else {
+            pelivoitto(p, q, 0);
+            return;
+          }
+        } else if (pelaaja[p].score == 15) {
+          if (lisays) pelaaja[p].score = 30;
+          else pelaaja[p].score = 0;
+        } else if (pelaaja[p].score == 30) {
+          if (lisays) pelaaja[p].score = 40;
+          else pelaaja[p].score = 15;
+        } else if (pelaaja[p].score == 40 && pelaaja[q].score <= 30 && lisays) {
+          pelivoitto(p, q, 1);
+          return;
+        } else if (pelaaja[p].score == 40 && pelaaja[q].score > 30 && lisays) {
+          pelaaja[p].score = "AD";
+          pelaaja[q].score = "";
+          $("td#score" + q).html("");
+        } else if (pelaaja[p].score == 40 && !lisays) {
+          pelaaja[p].score = "30";
+        } else if (pelaaja[p].score == "AD" && lisays) {
+          pelivoitto(p, q, 1);
+          return;
+        } else if (
+          pelaaja[p].score === "" &&
+          pelaaja[q].score == "AD" &&
+          lisays
+        ) {
+          pelaaja[p].score = "DEUCE";
+          pelaaja[q].score = "DEUCE";
+          $("td#score" + q).html("DEUCE");
+        } else if (pelaaja[p].score == "DEUCE" && lisays) {
+          pelaaja[p].score = "AD";
+          pelaaja[q].score = "";
+          $("td#score" + q).html("");
+        } else if (pelaaja[p].score == "DEUCE" && !lisays) {
+          pelaaja[p].score = "";
+          pelaaja[q].score = "AD";
+          $("td#score" + q).html("AD");
+        } else if (pelaaja[p].score == "AD" && !lisays) {
+          pelaaja[p].score = "40";
+          pelaaja[q].score = "40";
+          $("td#score" + q).html(40);
+        } else if (pelaaja[q].score == "AD" && !lisays) {
+          pelivoitto(q, p, 1);
+        } else {
+        }
+        $("td#score" + p).html(pelaaja[p].score);
+        if (pelaaja[1].loppu || pelaaja[2].loppu) alert("The match is over!");
+        else ottelu.vaihda();
+      }
+
+      function pelivoitto(p, q, lisays) {
+        $("td#score1").html("");
+        $("td#score2").html("");
+        if (lisays) pelaaja[p].pelit += 1;
+        else if (pelaaja[p].pelit === 0) {
+          eravoitto(p, q, 0);
+          return;
+        } else {
+          pelaaja[p].pelit -= 1;
+          if (pelaaja[p].loppu) {
+            pelaaja[p].erat -= 1;
+            pelaaja[p].loppu = false;
+            $("td#erat" + p).html(pelaaja[p].erat);
+          }
+          pelaaja[p].score = 0;
+          pelaaja[q].score = 0;
+        }
+
+        $("td#era" + p + ottelu.erassa).html(pelaaja[p].pelit);
+        /*if (ottelu.vuoro=="vasen1"||ottelu.vuoro=="oikea1") ottelu.vuoro="oikea2";
+      else ottelu.vuoro="oikea1";*/
+        if (ottelu.tiebreakissa) {
+          ottelu.tiebreakissa = false;
+          eravoitto(p, q, 1);
+          return;
+        } else if (
+          pelaaja[1].pelit == 6 &&
+          pelaaja[2].pelit == 6 &&
+          ottelu.tiebreak != "ei" &&
+          !(
+            ottelu.tiebreak == "eiviimeisessa" &&
+            ottelu.erassa == ottelu.voittotapa
+          )
+        ) {
+          ottelu.tiebreakissa = true;
+        } else if (
+          pelaaja[p].pelit >= 6 &&
+          pelaaja[q].pelit < pelaaja[p].pelit - 1
+        ) {
+          eravoitto(p, q, 1);
+          return;
+        } else {
+        }
+
+        pelaaja[1].score = 0;
+        pelaaja[2].score = 0;
+        ottelu.vaihda();
+        $("td#score1").html(0);
+        $("td#score2").html(0);
+      }
+
+      function eravoitto(p, q, lisays) {
+        if (lisays) pelaaja[p].erat += 1;
+        else if (pelaaja[p].erat === 0) return;
+        else {
+          pelaaja[p].erat -= 1;
+          pelaaja[p].loppu = false;
+        }
+        pelaaja[1].score = 0;
+        pelaaja[2].score = 0;
+        $("td#erat" + p).html(pelaaja[p].erat);
+        if (pelaaja[p].erat >= ottelu.voittotapa) {
+          otteluvoitto(p, q);
+          return;
+        }
+        if (lisays) {
+          ottelu.eratulos[ottelu.erassa - 1] =
+            pelaaja[1].pelit + pelaaja[2].pelit;
+          ottelu.erassa += 1;
+          //alert(pelaaja[1].pelit+pelaaja[2].pelit);
+        } else if (ottelu.erassa > 1) {
+          $("td.era" + ottelu.erassa).hide();
+          ottelu.erassa -= 1;
+        }
+        pelaaja[1].pelit = 0;
+        pelaaja[2].pelit = 0;
+        $("td#score1").html(0);
+        $("td#score2").html(0);
+        $("td#era1" + ottelu.erassa).html(0);
+        $("td#era2" + ottelu.erassa).html(0);
+        if (lisays) $("td.era" + ottelu.erassa).show();
+        ottelu.vaihda();
+      }
+
+      function otteluvoitto(p, q) {
+        pelaaja[p].loppu = true;
+        alert("The match is over!");
+      }
+
+      function valitsekaikki(para) {
+        para.focus();
+        para.setSelectionRange(0, 9999);
+      }
+      function nollaa() {
+        var conf = confirm("Are you sure you want to reset the calculator?");
+        if (conf) ottelu.nollaus();
+      }
+      $(function () {
+        $("td.era2").hide();
+        $("td.era3").hide();
+        $("td.era4").hide();
+        $("td.era5").hide();
+      });
+    </script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.0.3/cookieconsent.min.css"
+    />
+    <style>
+      .message {
+        display: none;
+        visibility: hidden;
+      }
+    </style>
+    <style>
+      a {
+        font-weight: bold;
+      }
+    </style>
+    <style>
+      div.abold > p > a,
+      div.abold > ul > li > a {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body class="mat-typography">
+    <app-root></app-root
+    >
+  </body>
 </html>
